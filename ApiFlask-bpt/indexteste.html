@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Consumir API Flask</title>
+</head>
+<body>
+    <h1>Consumir API Flask</h1>
+    <button onclick="fazerRequisicao()">Fazer Solicitação</button>
+
+    <div id="resultado"></div>
+
+    <script>
+        function fazerRequisicao() {
+            // Defina os dados que deseja enviar para a API
+            var data = {
+                sex: "Male",
+                redo: "Yes",
+                cpb: "Yes",
+                age: 1.0,
+                bsa: 1.0,
+                hb: 1.0
+            };
+
+            // Faça uma solicitação AJAX para a API Flask
+            var xhr = new XMLHttpRequest();
+            xhr.open("POST", "http://127.0.0.1:5000/predict", true);
+            xhr.setRequestHeader("Content-Type", "application/json;charset=UTF-8");
+
+            xhr.onreadystatechange = function () {
+                if (xhr.readyState === 4 && xhr.status === 200) {
+                    // A resposta da API está no formato JSON
+                    var resposta = JSON.parse(xhr.responseText);
+                    
+                    // Exiba a resposta na página
+                    document.getElementById("resultado").innerHTML = "Previsão: " + resposta.prediction;
+                }
+            };
+
+            // Converta os dados em JSON e envie a solicitação
+            var jsonData = JSON.stringify(data);
+            xhr.send(jsonData);
+        }
+    </script>
+</body>
+</html>
