@@ -15,6 +15,7 @@ def predict(sex, redo, cpb, age, bsa, hb):
     redo = 1 if redo == "Yes" else 0
     cpb = 1 if cpb == "Yes" else 0
     instance = [sex, age, bsa, redo, cpb, hb]
+    print = sex,age,bsa,redo,cpb,hb
     prediction = model.predict([instance])
     return bool(prediction[0])
 
