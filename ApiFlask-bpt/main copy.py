@@ -14,8 +14,8 @@ app = Flask(__name__)
 CORS(app)
 
 # Carregue o modelo e outros dados necessários
-model = joblib.load("LR.joblib")
-train = pd.read_csv("X_train.csv", usecols=range(1, 7)).to_numpy()
+model = joblib.load("ApiFlask-bpt\LR.joblib")
+train = pd.read_csv("ApiFlask-bpt\X_train.csv", usecols=range(1, 7)).to_numpy()
 class_names = model.classes_
 explainer = lime.lime_tabular.LimeTabularExplainer(train, feature_names=None, class_names=class_names, discretize_continuous=True)
 

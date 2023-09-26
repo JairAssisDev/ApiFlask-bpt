@@ -8,7 +8,8 @@ app = Flask(__name__)
 CORS(app)
 
 # Carregue o modelo e outros dados necessários
-model = joblib.load("LR.joblib")
+model = joblib.load("ApiFlask-bpt\LR.joblib")
+
 
 def predict(sex, redo, cpb, age, bsa, hb):
     sex = 1 if sex == "Male" else 0
