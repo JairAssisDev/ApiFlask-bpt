@@ -1,4 +1,4 @@
-from flask import Flask, request, jsonify
+from flask import Flask, request, jsonify,send_file
 from flask_cors import CORS
 import joblib
 import lime
@@ -8,18 +8,19 @@ import numpy as np
 import io
 import matplotlib.pyplot as plt
 import matplotlib
+import streamlit as st
 matplotlib.use('Agg')
 
 app = Flask(__name__)
 CORS(app)
 
 # Carregue o modelo e outros dados necessários
-model = joblib.load("ApiFlask-bpt\LR.joblib")
-train = pd.read_csv("ApiFlask-bpt\X_train.csv", usecols=range(1, 7)).to_numpy()
+model = joblib.load("LR.joblib")
+train = pd.read_csv("X_train.csv", usecols=range(1, 7)).to_numpy()
 class_names = model.classes_
 explainer = lime.lime_tabular.LimeTabularExplainer(train, feature_names=None, class_names=class_names, discretize_continuous=True)
 
-
+#@app.route("/predict", methods=["POST"])
 def predict_and_explain(sex, redo, cpb, age, bsa, hb):
     sex = 1 if sex == "Male" else 0
     redo = 1 if redo == "Yes" else 0
@@ -28,21 +29,17 @@ def predict_and_explain(sex, redo, cpb, age, bsa, hb):
     prediction = model.predict([instance])
     exp = explainer.explain_instance(np.array(instance), model.predict_proba, num_features=6)
 
-    # Converte a explicação em uma imagem
-    explanation_image = exp.as_pyplot_figure()
+    
+    return jsonify({
+            "prediction": bool(prediction[0]),
+            "lime": exp.as_html()
+        })
 
-    # Salva a imagem em um buffer de bytes
-    image_buffer = io.BytesIO()
-    explanation_image.savefig(image_buffer, format="png")
-    image_buffer.seek(0)
-
-    return prediction, image_buffer.read()
 
 @app.route("/predict", methods=["POST"])
 def predict():
     try:
         data = request.json  # Suponha que você está enviando os dados JSON para a API
-
         sex = data["sex"]
         redo = data["redo"]
         cpb = data["cpb"]
@@ -50,24 +47,15 @@ def predict():
         bsa = data["bsa"]
         hb = data["hb"]
 
-        prediction_result, explanation_image = predict_and_explain(sex, redo, cpb, age, bsa, hb)
+        return predict_and_explain(sex, redo, cpb, age, bsa, hb)
 
         result = {
-            "prediction": prediction_result[0],  # Se o modelo retornar uma matriz, pegue o primeiro elemento
+            "prediction": prediction_result  # Se o modelo retornar uma matriz, pegue o primeiro elemento
         }
 
-        # Crie um gráfico da explicação usando Matplotlib
-        plt.figure(figsize=(8, 6))
-        plt.imshow(explanation_image)
-        plt.axis('off')  # Desative os eixos
-        plt.tight_layout()
+        
 
-        # Salve o gráfico em um buffer de bytes
-        graph_buffer = io.BytesIO()
-        plt.savefig(graph_buffer, format="png")
-        graph_buffer.seek(0)
-
-        return jsonify(result), 200, {'Content-Type': 'image/png'}, graph_buffer.read()
+        #return jsonify(result), 200
 
     except Exception as e:
         return jsonify({"error": str(e)}), 500  # Retorna um erro 500 com uma mensagem de erro JSON

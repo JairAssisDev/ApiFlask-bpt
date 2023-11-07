@@ -9,8 +9,12 @@
 
     <div id="resultado"></div>
 
+    <iframe id="iframe" frameBorder="0" height="300" width="1000">
+       
+    </iframe>
+
     <script>
-        function fazerRequisicao() {
+        async function fazerRequisicao() {
             // Defina os dados que deseja enviar para a API
             var data = {
                 sex: "Male",
@@ -20,25 +24,21 @@
                 bsa: 1.0,
                 hb: 1.0
             };
-
+            const request = {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json;charset=UTF-8"
+                },
+                body: JSON.stringify(data)
+            }
             // Faça uma solicitação AJAX para a API Flask
-            var xhr = new XMLHttpRequest();
-            xhr.open("POST", "http://127.0.0.1:5000/predict", true);
-            xhr.setRequestHeader("Content-Type", "application/json;charset=UTF-8");
-
-            xhr.onreadystatechange = function () {
-                if (xhr.readyState === 4 && xhr.status === 200) {
-                    // A resposta da API está no formato JSON
-                    var resposta = JSON.parse(xhr.responseText);
-                    
-                    // Exiba a resposta na página
-                    document.getElementById("resultado").innerHTML = "Previsão: " + resposta.prediction;
-                }
-            };
-
-            // Converta os dados em JSON e envie a solicitação
-            var jsonData = JSON.stringify(data);
-            xhr.send(jsonData);
+            const response = await fetch("http://127.0.0.1:5000/predict", request);
+            if (response.status == 200){
+                //document.getElementById("resultado").innerHTML = "Previsão: " + resposta.prediction;
+                const resposta = await response.json()
+                console.log(resposta.prediction)
+                document.getElementById("iframe").srcdoc = resposta.lime;
+            }
         }
     </script>
 </body>
